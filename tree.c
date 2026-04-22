@@ -15,6 +15,15 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include "pes.h"
+#define MAX_INDEX_ENTRIES 10000
+typedef struct {
+    uint32_t mode;
+    ObjectID hash;
+    uint64_t mtime_sec;
+    uint32_t size;
+    char path[512];
+} IndexEntry;
 
 // ─── Mode Constants ─────────────────────────────────────────────────────────
 
@@ -23,7 +32,7 @@
 #define MODE_DIR       0040000
 
 // ─── PROVIDED ───────────────────────────────────────────────────────────────
-
+int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out);
 // Determine the object mode for a filesystem path.
 uint32_t get_file_mode(const char *path) {
     struct stat st;
@@ -129,9 +138,95 @@ int tree_serialize(const Tree *tree, void **data_out, size_t *len_out) {
 //   - object_write    : save that binary buffer to the store as OBJ_TREE
 //
 // Returns 0 on success, -1 on error.
+/* Minimal index reader — used only by tree_from_index so test_tree
+   links without index.o */
+static int read_index_for_tree(IndexEntry *entries, int *count_out) {
+    *count_out = 0;
+    FILE *f = fopen(INDEX_FILE, "r");
+    if (!f) return 0; /* empty index is fine */
+    while (*count_out < MAX_INDEX_ENTRIES) {
+        IndexEntry *e = &entries[*count_out];
+        char hex[HASH_HEX_SIZE + 1];
+        unsigned long long mtime;
+        int ret = fscanf(f, "%o %64s %llu %u %511s\n",
+                         &e->mode, hex, &mtime, &e->size, e->path);
+        if (ret != 5) break;
+        e->mtime_sec = (uint64_t)mtime;
+        if (hex_to_hash(hex, &e->hash) != 0) break;
+        (*count_out)++;
+    }
+    fclose(f);
+    return 0;
+}
+
+static int write_tree_level(IndexEntry *entries, int count,
+                             const char *prefix, ObjectID *id_out) {
+    Tree tree;
+    tree.count = 0;
+
+    int i = 0;
+    while (i < count) {
+        const char *path = entries[i].path;
+        if (prefix) path += strlen(prefix);
+
+        char *slash = strchr(path, '/');
+
+        if (slash == NULL) {
+            TreeEntry *e = &tree.entries[tree.count++];
+            e->mode = entries[i].mode;
+            e->hash = entries[i].hash;
+            snprintf(e->name, sizeof(e->name), "%s", path);
+            e->name[sizeof(e->name) - 1] = '\0';
+            i++;
+        } else {
+            char dir_name[256] = {0};
+            strncpy(dir_name, path, slash - path);
+            dir_name[slash - path] = '\0';
+
+            char new_prefix[512] = {0};
+            if (prefix)
+                snprintf(new_prefix, sizeof(new_prefix), "%s%s/", prefix, dir_name);
+            else
+                snprintf(new_prefix, sizeof(new_prefix), "%s/", dir_name);
+
+            int j = i;
+            while (j < count &&
+                   strncmp(entries[j].path, new_prefix, strlen(new_prefix)) == 0)
+                j++;
+
+            ObjectID sub_id;
+            if (write_tree_level(entries + i, j - i, new_prefix, &sub_id) != 0)
+                return -1;
+
+            TreeEntry *e = &tree.entries[tree.count++];
+            e->mode = 0040000;
+            e->hash = sub_id;
+            snprintf(e->name, sizeof(e->name), "%s", dir_name);
+            e->name[sizeof(e->name) - 1] = '\0';
+            i = j;
+        }
+    }
+
+    void *data;
+    size_t data_len;
+    if (tree_serialize(&tree, &data, &data_len) != 0) return -1;
+    int rc = object_write(OBJ_TREE, data, data_len, id_out);
+    free(data);
+    return rc;
+}
+
 int tree_from_index(ObjectID *id_out) {
-    // TODO: Implement recursive tree building
-    // (See Lab Appendix for logical steps)
-    (void)id_out;
-    return -1;
+    static IndexEntry entries[MAX_INDEX_ENTRIES];
+    int count = 0;
+    read_index_for_tree(entries, &count);
+
+    if (count == 0) {
+        Tree empty; empty.count = 0;
+        void *data; size_t len;
+        if (tree_serialize(&empty, &data, &len) != 0) return -1;
+        int rc = object_write(OBJ_TREE, data, len, id_out);
+        free(data);
+        return rc;
+    }
+    return write_tree_level(entries, count, NULL, id_out);
 }
