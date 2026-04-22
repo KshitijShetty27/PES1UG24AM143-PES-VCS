@@ -3,7 +3,7 @@
 
 **Name:** Kshitij Satish Shetty  
 **SRN:** PES1UG24AM143  
-**Repository:** [KshitijShetty27/PES1UG24AM143-PES-VCS](https://github.com/KshitijShetty27/OS_Orange-2_AM143_PES-VCS)  
+**Repository:** [KshitijShetty27/OS_Orange-2_PES-VCS](https://github.com/KshitijShetty27/OS_Orange-2_AM143_PES-VCS)  
 **Platform:** Ubuntu 22.04
 
 ---
