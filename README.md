@@ -31,13 +31,13 @@
 
 ### Screenshot 1A — `./test_objects` all tests passing
 
-![Screenshot 1A](screenshots/1A_test_objects.png)
+![Screenshot 1A](screenshots/1A_test_objects.jpeg)
 
 > All Phase 1 tests passed: blob storage, deduplication, and integrity check.
 
 ### Screenshot 1B — `find .pes/objects -type f` sharded directory structure
 
-![Screenshot 1B](screenshots/1B_find_objects.png)
+![Screenshot 1B](screenshots/1B_find_objects.jpeg)
 
 > Objects sharded by first 2 hex characters of their SHA-256 hash.
 
@@ -53,13 +53,13 @@
 
 ### Screenshot 2A — `./test_tree` all tests passing
 
-![Screenshot 2A](screenshots/2A_test_tree.png)
+![Screenshot 2A](screenshots/2A_test_tree.jpeg)
 
 > All Phase 2 tests passed: serialize/parse roundtrip and deterministic serialization.
 
 ### Screenshot 2B — Raw binary format of a tree object via `xxd`
 
-![Screenshot 2B](screenshots/2B_xxd_tree.png)
+![Screenshot 2B](screenshots/2B_xxd_tree.jpeg)
 
 > Raw binary contents of a tree object showing mode, hash, and filename entries.
 
@@ -77,13 +77,13 @@
 
 ### Screenshot 3A — `pes init` → `pes add` → `pes status`
 
-![Screenshot 3A](screenshots/3A_init_add_status.png)
+![Screenshot 3A](screenshots/3A_init_add_status.jpeg)
 
 > Repository initialized, `hello.txt` staged correctly, status output showing staged/unstaged/untracked sections.
 
 ### Screenshot 3B — `cat .pes/index` showing text-format index
 
-![Screenshot 3B](screenshots/3B_cat_index.png)
+![Screenshot 3B](screenshots/3B_cat_index.jpeg)
 
 > Human-readable index file showing mode, hash, mtime, size, and filename for each staged entry.
 
@@ -100,19 +100,19 @@
 
 ### Screenshot 4A — `./pes log` showing three commits
 
-![Screenshot 4A](screenshots/4A_pes_log.png)
+![Screenshot 4A](screenshots/4A_pes_log.jpeg)
 
 > Three commits with full hash, author, timestamp, and message displayed in reverse chronological order.
 
 ### Screenshot 4B — `find .pes -type f | sort` showing object growth
 
-![Screenshot 4B](screenshots/4B_find_pes_sort.png)
+![Screenshot 4B](screenshots/4B_find_pes_sort.jpeg)
 
 > Object store growth after three commits: blobs, trees, and commit objects all sharded correctly.
 
 ### Screenshot 4C — `cat .pes/refs/heads/main` and `cat .pes/HEAD`
 
-![Screenshot 4C](screenshots/4C_refs_head.png)
+![Screenshot 4C](screenshots/4C_refs_head.jpeg)
 
 > Reference chain: HEAD → `ref: refs/heads/main` → latest commit hash.
 
@@ -214,7 +214,9 @@ Assume each commit introduces ~3 new objects on average (1 commit + 1 tree + ~1 
 
 ### `make test-integration` — All tests passing
 
-![Final Integration Test](screenshots/Final_integration.png)
+![Final Integration 1](screenshots/Final_integration_1.jpeg)
+![Final Integration 2](screenshots/Final_integration_2.jpeg)
+![Final Integration 3](screenshots/Final_integration_3.jpeg)
 
 > Full end-to-end integration test confirming: repository initialization, staging, status, three commits, full history log, reference chain, and object store integrity — all passing.
 
