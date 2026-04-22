@@ -1,7 +1,7 @@
 # PES-VCS Lab Report
 ### Building a Version Control System from Scratch
 
-**Name:** Kshitij Shetty  
+**Name:** Kshitij Satish Shetty  
 **SRN:** PES1UG24AM143  
 **Repository:** [KshitijShetty27/PES1UG24AM143-PES-VCS](https://github.com/KshitijShetty27/PES1UG24AM143-PES-VCS)  
 **Platform:** Ubuntu 22.04
